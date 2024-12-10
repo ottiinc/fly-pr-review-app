@@ -1,0 +1,44 @@
+name: Fly.io PR Review App
+author: Otti, Inc.
+description: Create a temporary pull request review app on Fly.io
+branding:
+  icon: server
+  color: purple
+runs:
+  using: docker
+  image: Dockerfile
+inputs:
+  name:
+    required: true
+    description: App name to use
+  org:
+    required: true
+    description: Target Fly.io organization
+  build_args:
+    required: false
+    description: >
+      Set of build arguments in the form of newline-separated KEY=VALUE pairs
+  build_secrets:
+    required: false
+    description: >
+      Set of build secrets in the form of newline-separated KEY=VALUE pairs
+  config:
+    required: false
+    default: fly.toml
+    description: Path to the application configuration file
+  env:
+    required: false
+    description: >
+      Set of environment variables in the form of newline-separated KEY=VALUE pairs
+  ha:
+    required: false
+    default: "false"
+    description: Create spare machines to increase app availability
+  secrets:
+    required: false
+    description: >
+      Set of runtime secrets in the form of newline-separated KEY=VALUE pairs.
+      These will be passed to `fly secrets import`.
+outputs:
+  url:
+    description: URL of the deployed app
