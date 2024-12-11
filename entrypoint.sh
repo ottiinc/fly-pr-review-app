@@ -62,7 +62,7 @@ delete_app() {
     return
   fi
 
-  fly apps destroy --yes --name="${INPUT_NAME}" --org="${INPUT_ORG}"
+  fly apps destroy "${INPUT_NAME}" --yes
 }
 
 main() {
