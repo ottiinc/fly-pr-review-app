@@ -8,6 +8,26 @@ set_outputs() {
   echo "url=https://$(jq -r '.Hostname' status.json)" >> "${GITHUB_OUTPUT}"
 }
 
+ensure_postgres() {
+  if [[ -z "${INPUT_POSTGRES_NAME:-}" ]]; then
+    return
+  fi
+
+  if is_existing_app "${INPUT_POSTGRES_NAME}"; then
+    return
+  fi
+
+  fly postgres create \
+    --name "${INPUT_POSTGRES_NAME}" \
+    --org="${INPUT_ORG}" \
+    --region="${INPUT_POSTGRES_REGION}"\
+    --initial-cluster-size="${INPUT_POSTGRES_INITIAL_CLUSTER_SIZE}" \
+    --vm-size="${INPUT_POSTGRES_VM_SIZE}" \
+    --volume-size="${INPUT_POSTGRES_VOLUME_SIZE}"
+
+  fly postgres attach "${INPUT_POSTGRES_NAME}" --app="${INPUT_NAME}"
+}
+
 deploy() {
   local -a args
 
@@ -45,7 +65,7 @@ set_secrets() {
 }
 
 ensure_app() {
-  if is_existing_app; then
+  if is_existing_app "${INPUT_NAME}"; then
     return
   fi
 
@@ -53,8 +73,11 @@ ensure_app() {
 }
 
 is_existing_app() {
+  local name
+  name="$1"
+
   fly apps list --json --org="${INPUT_ORG}" \
-    | jq --exit-status --arg name "${INPUT_NAME}" 'any(.Name == $name)' > /dev/null
+    | jq --exit-status --arg name "${name}" 'any(.Name == $name)' > /dev/null
 }
 
 delete_app() {
@@ -63,6 +86,10 @@ delete_app() {
   fi
 
   fly apps destroy "${INPUT_NAME}" --yes
+
+  if [[ -n "${INPUT_POSTGRES_NAME:-}" ]]; then
+    fly apps destroy "${INPUT_POSTGRES_NAME}" --yes
+  fi
 }
 
 main() {
@@ -77,6 +104,7 @@ main() {
 
   ensure_app
   set_secrets
+  ensure_postgres
   deploy
   set_outputs
 }
