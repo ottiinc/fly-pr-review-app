@@ -81,7 +81,7 @@ is_existing_app() {
 }
 
 delete_app() {
-  if ! is_existing_app; then
+  if ! is_existing_app "${INPUT_NAME}"; then
     return
   fi
 
