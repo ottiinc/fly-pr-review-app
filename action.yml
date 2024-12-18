@@ -34,10 +34,6 @@ inputs:
     required: false
     default: "false"
     description: Create spare machines to increase app availability
-  postgres_initial_cluster_size:
-    required: false
-    default: "1"
-    description: Number of Postgres nodes to create
   postgres_name:
     required: false
     description: Name of the Postgres app to create
@@ -45,6 +41,9 @@ inputs:
     required: false
     default: iad
     description: Target region for the Postgres app
+  postgres_vm_memory:
+    required: false
+    description: Memory of the Postgres machine
   postgres_vm_size:
     required: false
     default: shared-cpu-1x

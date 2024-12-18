@@ -9,6 +9,8 @@ set_outputs() {
 }
 
 ensure_postgres() {
+  local machine_id
+
   if [[ -z "${INPUT_POSTGRES_NAME:-}" ]]; then
     return
   fi
@@ -17,13 +19,21 @@ ensure_postgres() {
     return
   fi
 
-  fly postgres create \
+  fly postgres create "${INPUT_POSTGRES_VM_MEMORY:+--detach}"\
     --name "${INPUT_POSTGRES_NAME}" \
     --org="${INPUT_ORG}" \
     --region="${INPUT_POSTGRES_REGION}"\
-    --initial-cluster-size="${INPUT_POSTGRES_INITIAL_CLUSTER_SIZE}" \
+    --initial-cluster-size=1 \
     --vm-size="${INPUT_POSTGRES_VM_SIZE}" \
     --volume-size="${INPUT_POSTGRES_VOLUME_SIZE}"
+
+  if [[ -n "${INPUT_POSTGRES_VM_MEMORY:-}" ]]; then
+    machine_id="$(fly machine list --quiet --app="${INPUT_POSTGRES_NAME}" \
+      | tr -d '\t')"
+
+    fly machine update "${machine_id}" --yes --app="${INPUT_POSTGRES_NAME}" \
+      --memory="${INPUT_POSTGRES_VM_MEMORY}"
+  fi
 
   fly postgres attach "${INPUT_POSTGRES_NAME}" --app="${INPUT_NAME}"
 }
@@ -61,7 +71,7 @@ set_secrets() {
     return
   fi
 
-  printf "%s" "${INPUT_SECRETS}" | fly secrets import --app="${INPUT_NAME}"
+  fly secrets import --app="${INPUT_NAME}" <<< "${INPUT_SECRETS}"
 }
 
 ensure_app() {
