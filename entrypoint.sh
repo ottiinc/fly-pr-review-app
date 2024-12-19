@@ -38,6 +38,19 @@ ensure_postgres() {
   fly postgres attach "${INPUT_POSTGRES_NAME}" --app="${INPUT_NAME}"
 }
 
+destroy_release_machine() {
+  # Work around a Fly bug that causes release_command machines to be left behind,
+  # which in turn causes the app to fail to deploy.
+
+  if ! grep -qE '^release_command' "${INPUT_CONFIG}"; then
+    return
+  fi
+
+  fly machines list --json --app="${INPUT_NAME}" \
+    | jq -r '.[] | select (.config.metadata.fly_process_group == "fly_app_release_command" and .state == "stopped") | .id' \
+    | xargs -r -n 1 fly machine destroy --app="${INPUT_NAME}"
+}
+
 deploy() {
   local -a args
 
@@ -115,6 +128,7 @@ main() {
   ensure_app
   set_secrets
   ensure_postgres
+  destroy_release_machine
   deploy
   set_outputs
 }
