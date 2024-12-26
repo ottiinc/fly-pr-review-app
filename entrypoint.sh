@@ -47,8 +47,11 @@ destroy_release_machine() {
   fi
 
   fly machines list --json --app="${INPUT_NAME}" \
-    | jq -r '.[] | select (.config.metadata.fly_process_group == "fly_app_release_command" and .state == "stopped") | .id' \
-    | xargs -r -n 1 fly machine destroy --app="${INPUT_NAME}"
+    | jq -r '.[] | select (
+        .config.metadata.fly_process_group == "fly_app_release_command" and
+        (.state == "stopped" or .state == "failed")
+      ) | .id' \
+    | xargs -r -n 1 fly machine destroy --force --app="${INPUT_NAME}"
 }
 
 deploy() {
