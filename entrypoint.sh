@@ -59,6 +59,7 @@ deploy() {
 
   args+=(--app="${INPUT_NAME}")
   args+=(--config="${INPUT_CONFIG}")
+  args+=(--depot="${INPUT_DEPOT}")
   args+=(--ha="${INPUT_HA}")
 
   while IFS= read -r build_arg; do

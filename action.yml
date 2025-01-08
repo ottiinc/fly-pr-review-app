@@ -26,6 +26,10 @@ inputs:
     required: false
     default: fly.toml
     description: Path to the application configuration file
+  depot:
+    required: false
+    default: "true"
+    description: Use depot builder
   env:
     required: false
     description: >
