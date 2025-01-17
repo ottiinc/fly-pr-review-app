@@ -16,6 +16,7 @@ ensure_postgres() {
   fi
 
   if is_existing_app "${INPUT_POSTGRES_NAME}"; then
+    attach_if_required
     return
   fi
 
@@ -35,7 +36,7 @@ ensure_postgres() {
       --memory="${INPUT_POSTGRES_VM_MEMORY}"
   fi
 
-  fly postgres attach "${INPUT_POSTGRES_NAME}" --app="${INPUT_NAME}"
+  attach_if_required
 }
 
 destroy_release_machine() {
@@ -96,6 +97,17 @@ ensure_app() {
   fi
 
   fly apps create --name="${INPUT_NAME}" --org="${INPUT_ORG}"
+}
+
+attach_if_required() {
+  # Check if the Postgres instance is already attached
+  if fly postgres users list --app "${INPUT_POSTGRES_NAME}" | grep -q "${INPUT_NAME//-/_}"; then
+    echo "Postgres instance '${INPUT_POSTGRES_NAME}' is already attached to app '${INPUT_NAME}', skipping..."
+  else
+    echo "Attaching Postgres instance '${INPUT_POSTGRES_NAME}' to app '${INPUT_NAME}'..."
+    fly secrets unset DATABASE_URL --app "${INPUT_NAME}" # In case DATABASE_URL _was_ set but the postgres app was destroyed
+    fly postgres attach "${INPUT_POSTGRES_NAME}" --app="${INPUT_NAME}" --yes
+  fi
 }
 
 is_existing_app() {
