@@ -140,6 +140,13 @@ main() {
     exit 0
   fi
 
+  if [[ "$action" = "synchronize" && "${INPUT_SYNC}" = "false" ]]; then
+    if is_existing_app "${INPUT_NAME}"; then
+      set_outputs
+      exit 0
+    fi
+  fi
+
   ensure_app
   set_secrets
   ensure_postgres

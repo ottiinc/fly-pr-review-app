@@ -57,6 +57,10 @@ inputs:
     description: >
       Set of runtime secrets in the form of newline-separated KEY=VALUE pairs.
       These will be passed to `fly secrets import`.
+  sync:
+    required: false
+    default: "true"
+    description: Trigger a new deployment on pull request synchronize events.
 outputs:
   url:
     description: URL of the deployed app
