@@ -62,6 +62,10 @@ deploy() {
   args+=(--config="${INPUT_CONFIG}")
   args+=(--ha="${INPUT_HA}")
 
+  if [[ -n "${INPUT_IMAGE:-}" ]]; then
+    args+=(--image="${INPUT_IMAGE}")
+  fi
+
   while IFS= read -r build_arg; do
     if [[ -n "${build_arg}" ]]; then
       args+=(--build-arg="${build_arg}")

@@ -34,6 +34,9 @@ inputs:
     required: false
     default: "false"
     description: Create spare machines to increase app availability
+  image:
+    required: false
+    description: Docker image to deploy
   postgres_name:
     required: false
     description: Name of the Postgres app to create
