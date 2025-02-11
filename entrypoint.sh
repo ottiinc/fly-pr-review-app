@@ -20,7 +20,7 @@ ensure_postgres() {
     return
   fi
 
-  fly postgres create "${INPUT_POSTGRES_VM_MEMORY:+--detach}"\
+  fly postgres create \
     --name "${INPUT_POSTGRES_NAME}" \
     --org="${INPUT_ORG}" \
     --region="${INPUT_POSTGRES_REGION}"\
