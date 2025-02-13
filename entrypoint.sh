@@ -9,7 +9,7 @@ set_outputs() {
 }
 
 ensure_postgres() {
-  local machine_id
+  local -a args
 
   if [[ -z "${INPUT_POSTGRES_NAME:-}" ]]; then
     return
@@ -20,21 +20,17 @@ ensure_postgres() {
     return
   fi
 
-  fly postgres create \
-    --name "${INPUT_POSTGRES_NAME}" \
-    --org="${INPUT_ORG}" \
-    --region="${INPUT_POSTGRES_REGION}"\
-    --initial-cluster-size=1 \
-    --vm-size="${INPUT_POSTGRES_VM_SIZE}" \
-    --volume-size="${INPUT_POSTGRES_VOLUME_SIZE}"
+  args+=(--name="${INPUT_POSTGRES_NAME}")
+  args+=(--org="${INPUT_ORG}")
+  args+=(--region="${INPUT_POSTGRES_REGION}")
+  args+=(--vm-size="${INPUT_POSTGRES_VM_SIZE}")
+  args+=(--volume-size="${INPUT_POSTGRES_VOLUME_SIZE}")
 
   if [[ -n "${INPUT_POSTGRES_VM_MEMORY:-}" ]]; then
-    machine_id="$(fly machine list --quiet --app="${INPUT_POSTGRES_NAME}" \
-      | tr -d '\t')"
-
-    fly machine update "${machine_id}" --yes --app="${INPUT_POSTGRES_NAME}" \
-      --memory="${INPUT_POSTGRES_VM_MEMORY}"
+    args+=(--vm-memory="${INPUT_POSTGRES_VM_MEMORY}")
   fi
+
+  fly postgres create --initial-cluster-size=1 "${args[@]}"
 
   attach_if_required
 }
